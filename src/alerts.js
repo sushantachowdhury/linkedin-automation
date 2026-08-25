@@ -187,20 +187,44 @@ async function sendEmail(settings, { subject, html, text, date, isSuccess = fals
   }
 }
 
+function formatWhatsAppNumber(num, defaultCountryCode = '91') {
+  if (!num) return '';
+  let cleaned = num.toString().trim();
+  if (!cleaned.startsWith('whatsapp:')) {
+    if (cleaned.startsWith('+')) {
+      cleaned = `whatsapp:${cleaned}`;
+    } else {
+      if (cleaned.length === 10) {
+        cleaned = `whatsapp:+${defaultCountryCode}${cleaned}`;
+      } else {
+        cleaned = `whatsapp:+${cleaned}`;
+      }
+    }
+  }
+  return cleaned;
+}
+
 /**
  * Send WhatsApp helper
  */
 async function sendWhatsApp(settings, body, date) {
   const sid = settings.TWILIO_ACCOUNT_SID;
   const token = settings.TWILIO_AUTH_TOKEN;
-  const from = settings.TWILIO_WHATSAPP_FROM || 'whatsapp:+14155238886';
-  const to = settings.TWILIO_WHATSAPP_TO || `whatsapp:+91${settings.whatsapp_target || '8017129474'}`;
+  
+  const rawFrom = settings.TWILIO_WHATSAPP_FROM || 'whatsapp:+14155238886';
+  const rawTo = settings.TWILIO_WHATSAPP_TO || '8017129474';
+  
+  const from = formatWhatsAppNumber(rawFrom);
+  const to = formatWhatsAppNumber(rawTo);
+
+  const rawNumberOnly = to.replace('whatsapp:', '');
+  const updatedBody = `${body}\n\n(Confirmed to: ${rawNumberOnly})`;
 
   const previewFile = path.join(logsDir, `whatsapp_preview_${date}.json`);
 
   if (!sid || !token) {
     // Write local JSON preview fallback
-    fs.writeFileSync(previewFile, JSON.stringify({ to, from, body, timestamp: new Date().toISOString() }, null, 2), 'utf-8');
+    fs.writeFileSync(previewFile, JSON.stringify({ to, from, body: updatedBody, timestamp: new Date().toISOString() }, null, 2), 'utf-8');
     logEvent('ALERT_WARN', `Twilio API credentials not configured. Saved WhatsApp preview to: ${previewFile}`);
     return;
   }
@@ -208,13 +232,13 @@ async function sendWhatsApp(settings, body, date) {
   try {
     const client = twilio(sid, token);
     const message = await client.messages.create({
-      body,
+      body: updatedBody,
       from,
       to
     });
     logEvent('ALERT_SUCCESS', `WhatsApp alert sent successfully to ${to} (SID: ${message.sid})`);
   } catch (err) {
     logEvent('ALERT_ERROR', `Failed to send WhatsApp alert via Twilio: ${err.message}. Saved preview locally.`);
-    fs.writeFileSync(previewFile, JSON.stringify({ to, from, body, error: err.message }, null, 2), 'utf-8');
+    fs.writeFileSync(previewFile, JSON.stringify({ to, from, body: updatedBody, error: err.message }, null, 2), 'utf-8');
   }
 }
