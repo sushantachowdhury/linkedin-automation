@@ -104,7 +104,7 @@ function Settings({ settings, backendUrl, showToast, onRefresh }) {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '20px', background: 'rgba(16, 185, 129, 0.05)', border: '1px solid rgba(16, 185, 129, 0.2)', padding: '20px', borderRadius: '10px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
               <img 
-                src={settings.LINKEDIN_USER_PICTURE || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=120'} 
+                src={settings.LINKEDIN_USER_PICTURE || '/user_logo.png'} 
                 alt="Avatar" 
                 style={{ width: '60px', height: '60px', borderRadius: '50%', border: '2px solid var(--color-success)' }} 
               />
