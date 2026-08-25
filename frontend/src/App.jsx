@@ -101,7 +101,7 @@ function App() {
   const userProfile = {
     name: settings.LINKEDIN_USER_NAME || 'Sushanta Chowdhury',
     headline: 'Frontend Developer & UI/UX Specialist | Engineering Scalable Web Architectures',
-    avatar: settings.LINKEDIN_USER_PICTURE || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=120'
+    avatar: settings.LINKEDIN_USER_PICTURE || '/user_logo.png'
   };
 
   return (
