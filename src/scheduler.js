@@ -152,26 +152,26 @@ export async function triggerPublish(date) {
 export function startScheduler() {
   logEvent('SCHEDULER', 'Initializing background schedule listeners (Local System Time)...');
 
-  // 16:00 - Content Generation cron (every day at 4:00 PM)
-  cron.schedule('0 16 * * *', async () => {
+  // 16:30 - Content Generation cron (every day at 4:30 PM)
+  cron.schedule('30 16 * * *', async () => {
     const today = getLocalDateString();
-    logEvent('SCHEDULER', `Cron triggered: Content Generation (16:00) for ${today}`);
+    logEvent('SCHEDULER', `Cron triggered: Content Generation (16:30) for ${today}`);
     await triggerContentGen(today);
   });
 
-  // 16:15 - Alerts cron (every day at 4:15 PM)
-  cron.schedule('15 16 * * *', async () => {
+  // 16:45 - Alerts cron (every day at 4:45 PM)
+  cron.schedule('45 16 * * *', async () => {
     const today = getLocalDateString();
-    logEvent('SCHEDULER', `Cron triggered: Review Alert (16:15) for ${today}`);
+    logEvent('SCHEDULER', `Cron triggered: Review Alert (16:45) for ${today}`);
     await triggerAlert(today);
   });
 
-  // 16:30 - Publishing cron (every day at 4:30 PM)
-  cron.schedule('30 16 * * *', async () => {
+  // 17:00 - Publishing cron (every day at 5:00 PM)
+  cron.schedule('0 17 * * *', async () => {
     const today = getLocalDateString();
-    logEvent('SCHEDULER', `Cron triggered: LinkedIn Publishing (16:30) for ${today}`);
+    logEvent('SCHEDULER', `Cron triggered: LinkedIn Publishing (17:00) for ${today}`);
     await triggerPublish(today);
   });
 
-  logEvent('SCHEDULER', 'Cron listener active: Content Gen (16:00), Review Alerts (16:15), Publishing (16:30)');
+  logEvent('SCHEDULER', 'Cron listener active: Content Gen (16:30), Review Alerts (16:45), Publishing (17:00)');
 }
