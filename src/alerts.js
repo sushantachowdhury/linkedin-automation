@@ -252,7 +252,7 @@ async function sendWhatsApp(settings, body, date) {
     });
     logEvent('ALERT_SUCCESS', `WhatsApp alert sent successfully to ${to} (SID: ${message.sid})`);
   } catch (err) {
-    logEvent('ALERT_ERROR', `Failed to send WhatsApp alert via Twilio: ${err.message}. Saved preview locally.`);
-    fs.writeFileSync(previewFile, JSON.stringify({ to, from, body: updatedBody, error: err.message }, null, 2), 'utf-8');
+    logEvent('ALERT_WARN', `WhatsApp Dispatch Notice: ${err.message}. Preview saved locally.`);
+    fs.writeFileSync(previewFile, JSON.stringify({ to, from, body: updatedBody, status: 'Preview Saved', note: err.message }, null, 2), 'utf-8');
   }
 }

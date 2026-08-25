@@ -27,7 +27,7 @@ export async function getSheetQueue(settings) {
   const serviceAccount = settings.GOOGLE_SERVICE_ACCOUNT_JSON;
 
   if (!sheetId || !serviceAccount) {
-    logEvent('SHEETS_WARN', 'Google Sheets not configured. Falling back to local store.');
+    logEvent('SHEETS_INFO', 'Google Sheets not connected. Operating with local database.');
     return getPosts(); // local store
   }
 

@@ -62,7 +62,7 @@ app.get('/api/settings', (req, res) => {
   const sensitiveKeys = ['GOOGLE_SERVICE_ACCOUNT_JSON', 'GEMINI_API_KEY', 'EMAIL_PASS', 'TWILIO_AUTH_TOKEN', 'LINKEDIN_ACCESS_TOKEN', 'LINKEDIN_CLIENT_SECRET'];
   
   sensitiveKeys.forEach(key => {
-    if (responseSettings[key]) {
+    if (responseSettings[key] && typeof responseSettings[key] === 'string') {
       responseSettings[key] = responseSettings[key].length > 8 
         ? `${responseSettings[key].substring(0, 8)}... (Configured)` 
         : 'Configured';
@@ -78,7 +78,10 @@ app.post('/api/settings', (req, res) => {
   const filteredSettings = {};
   Object.keys(newSettings).forEach(key => {
     const val = newSettings[key];
-    if (val && !val.endsWith('... (Configured)') && val !== 'Configured') {
+    if (val !== undefined && val !== null) {
+      if (typeof val === 'string' && (val.endsWith('... (Configured)') || val === 'Configured')) {
+        return;
+      }
       filteredSettings[key] = val;
     }
   });
