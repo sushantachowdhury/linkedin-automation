@@ -10,21 +10,55 @@ if (!fs.existsSync(logsDir)) {
   fs.mkdirSync(logsDir, { recursive: true });
 }
 
-/**
- * Send email & WhatsApp alerts for post review
- * @param {Object} settings 
- * @param {Object} post 
- */
 export async function sendReviewAlert(settings, post) {
   const approvalLink = `http://localhost:${settings.PORT || 5000}/?date=${post.date}`;
-  const whatsappMsg = `LinkedIn post review is ready for approval.\nTopic: "${post.title}"\nReview Link: ${approvalLink}`;
-  
-  logEvent('ALERT_INFO', `Triggering alerts for date ${post.date}...`);
+  let whatsappMsg;
+  let emailHtml;
+  let emailText;
+  let subject;
 
-  // 1. Send Email
-  await sendEmail(settings, {
-    subject: `📝 Action Required: LinkedIn Post Review - ${post.date}`,
-    html: `
+  const activePayload = post.messagePayload || post.payload;
+
+  if (post.draftOptions && Array.isArray(post.draftOptions) && post.draftOptions.length > 0 && !activePayload) {
+    // Alert for choosing one of the 3 alternatives
+    subject = `📝 Action Required: Select LinkedIn Post Draft - ${post.date}`;
+    whatsappMsg = `LinkedIn post drafts are ready for selection.\nTopic: "${post.title}"\nSelect a draft here: ${approvalLink}`;
+    
+    const draftRender = post.draftOptions.map((opt, idx) => `
+      <div style="background-color: #1e293b; padding: 15px; border-radius: 8px; border-left: 4px solid #8b5cf6; margin: 15px 0;">
+        <h4 style="margin: 0 0 8px 0; color: #a78bfa; font-size: 13px; text-transform: uppercase; letter-spacing: 0.05em;">Option ${idx + 1}</h4>
+        <pre style="margin: 0; white-space: pre-wrap; font-family: inherit; font-size: 13.5px; line-height: 1.5; color: #e2e8f0;">${opt}</pre>
+      </div>
+    `).join('');
+
+    emailHtml = `
+      <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0f172a; color: #f1f5f9; padding: 30px; border-radius: 12px; max-width: 600px; margin: 0 auto; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
+        <h2 style="color: #8b5cf6; border-bottom: 2px solid #334155; padding-bottom: 10px; margin-top: 0;">LinkedIn Post - Select Draft Option</h2>
+        <p style="font-size: 16px; line-height: 1.6;">Hello Sushanta,</p>
+        <p style="font-size: 15px; line-height: 1.6; color: #94a3b8;">Your automated publishing pipeline has drafted 3 alternatives for today's topic: <strong>"${post.title}"</strong>.</p>
+        <p style="font-size: 15px; line-height: 1.6; color: #94a3b8;">Please review the draft options below and click the link to select your preferred one:</p>
+        
+        ${draftRender}
+
+        <div style="text-align: center; margin-top: 30px;">
+          <a href="${approvalLink}" style="background-color: #8b5cf6; color: #ffffff; padding: 12px 24px; font-size: 16px; font-weight: bold; text-decoration: none; border-radius: 6px; display: inline-block; transition: background-color 0.2s;">
+            Go to Dashboard & Select Option
+          </a>
+        </div>
+        
+        <p style="font-size: 13px; color: #64748b; margin-top: 30px; border-top: 1px solid #334155; padding-top: 15px; text-align: center;">
+          Sushanta Chowdhury - LinkedIn Automation Pipeline
+        </p>
+      </div>
+    `;
+
+    emailText = `LinkedIn Post Draft Options are ready for ${post.date}.\nTopic: "${post.title}"\n\nPlease open the dashboard to select one of the 3 draft options.\n\nReview Link: ${approvalLink}`;
+  } else {
+    // Normal single post alert
+    subject = `📝 Action Required: LinkedIn Post Review - ${post.date}`;
+    whatsappMsg = `LinkedIn post review is ready for approval.\nTopic: "${post.title}"\nReview Link: ${approvalLink}`;
+    
+    emailHtml = `
       <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0f172a; color: #f1f5f9; padding: 30px; border-radius: 12px; max-width: 600px; margin: 0 auto; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
         <h2 style="color: #8b5cf6; border-bottom: 2px solid #334155; padding-bottom: 10px; margin-top: 0;">LinkedIn Post Review</h2>
         <p style="font-size: 16px; line-height: 1.6;">Hello Sushanta,</p>
@@ -37,7 +71,7 @@ export async function sendReviewAlert(settings, post) {
 
         <div style="background-color: #1e293b; padding: 20px; border-radius: 8px; margin: 20px 0; max-height: 250px; overflow-y: auto;">
           <h4 style="margin: 0 0 10px 0; color: #a78bfa; font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em;">Message Draft</h4>
-          <pre style="margin: 0; white-space: pre-wrap; font-family: inherit; font-size: 14px; line-height: 1.6; color: #e2e8f0;">${post.payload || post.messagePayload}</pre>
+          <pre style="margin: 0; white-space: pre-wrap; font-family: inherit; font-size: 14px; line-height: 1.6; color: #e2e8f0;">${activePayload}</pre>
         </div>
 
         <div style="text-align: center; margin-top: 30px;">
@@ -50,8 +84,18 @@ export async function sendReviewAlert(settings, post) {
           Sushanta Chowdhury - LinkedIn Automation Pipeline
         </p>
       </div>
-    `,
-    text: `LinkedIn Post Review Ready for ${post.date}.\nTopic: ${post.title}\n\nDraft Content:\n${post.payload || post.messagePayload}\n\nReview Link: ${approvalLink}`,
+    `;
+
+    emailText = `LinkedIn Post Review Ready for ${post.date}.\nTopic: ${post.title}\n\nDraft Content:\n${activePayload}\n\nReview Link: ${approvalLink}`;
+  }
+
+  logEvent('ALERT_INFO', `Triggering alerts for date ${post.date}...`);
+
+  // 1. Send Email
+  await sendEmail(settings, {
+    subject,
+    html: emailHtml,
+    text: emailText,
     date: post.date
   });
 

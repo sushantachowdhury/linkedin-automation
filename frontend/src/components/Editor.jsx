@@ -6,7 +6,9 @@ import {
   ThumbsUp, 
   MessageSquare, 
   Repeat2, 
-  Globe2 
+  Globe2,
+  X,
+  Sparkles
 } from 'lucide-react';
 
 function Editor({ posts, selectedDate, setSelectedDate, profile, backendUrl, showToast, onRefresh }) {
@@ -111,6 +113,136 @@ function Editor({ posts, selectedDate, setSelectedDate, profile, backendUrl, sho
       setPublishing(false);
     }
   };
+
+  const handleSelectOption = async (index) => {
+    try {
+      const response = await fetch(`${backendUrl}/api/posts/select-option`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ date: selectedDate, index })
+      });
+      if (response.ok) {
+        showToast(`Draft option ${index + 1} chosen successfully!`);
+        onRefresh();
+      } else {
+        showToast('Failed to select option.', 'error');
+      }
+    } catch (err) {
+      showToast('Network error selecting option.', 'error');
+    }
+  };
+
+  const handleRejectOptions = async () => {
+    const confirmCancel = window.confirm('Are you sure you want to discard these draft options? The post will return to Pending.');
+    if (!confirmCancel) return;
+
+    try {
+      const response = await fetch(`${backendUrl}/api/posts/reject`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ date: selectedDate })
+      });
+      if (response.ok) {
+        showToast('Draft options discarded successfully.');
+        onRefresh();
+      } else {
+        showToast('Failed to discard draft options.', 'error');
+      }
+    } catch (err) {
+      showToast('Network error discarding options.', 'error');
+    }
+  };
+
+  const hasOptionsToSelect = activePost && 
+    activePost.draftOptions && 
+    Array.isArray(activePost.draftOptions) && 
+    activePost.draftOptions.length > 0 && 
+    !(activePost.messagePayload || activePost.payload);
+
+  if (hasOptionsToSelect) {
+    return (
+      <div className="editor-layout" style={{ gridTemplateColumns: '1fr' }}>
+        <div className="glass-panel" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
+            <div>
+              <h2 style={{ fontSize: '20px', fontWeight: 800, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Sparkles size={20} color="var(--accent-secondary)" />
+                Choose LinkedIn Post Alternative
+              </h2>
+              <p style={{ color: 'var(--text-secondary)', fontSize: '13px', marginTop: '4px' }}>
+                Topic: <strong>"{activePost.title}"</strong> | Scheduled for {activePost.date} ({activePost.time || '17:00'})
+              </p>
+            </div>
+            
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <label style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-secondary)' }}>Active Date:</label>
+                <select 
+                  className="form-input" 
+                  value={selectedDate} 
+                  onChange={(e) => setSelectedDate(e.target.value)}
+                  style={{ padding: '8px 12px', minWidth: '150px' }}
+                >
+                  {posts.map(p => (
+                    <option key={p.date} value={p.date}>
+                      {p.date} ({p.status})
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <span className="badge awaiting">Awaiting Selection</span>
+            </div>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px', marginTop: '10px' }}>
+            {activePost.draftOptions.map((opt, idx) => (
+              <div key={idx} className="glass-panel" style={{ display: 'flex', flexDirection: 'column', gap: '16px', background: 'rgba(30, 41, 59, 0.25)', border: '1px solid rgba(255, 255, 255, 0.05)', padding: '20px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: '12px', fontWeight: 800, color: 'var(--accent-secondary)', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                    ✨ Option {idx + 1}
+                  </span>
+                </div>
+                <div style={{ 
+                  background: 'rgba(15, 23, 42, 0.4)', 
+                  padding: '16px', 
+                  borderRadius: 'var(--radius-md)', 
+                  border: '1px solid rgba(255,255,255,0.03)',
+                  height: '300px', 
+                  overflowY: 'auto',
+                  fontSize: '13px',
+                  lineHeight: '1.6',
+                  whiteSpace: 'pre-wrap',
+                  color: '#e2e8f0',
+                  fontFamily: 'inherit'
+                }}>
+                  {opt}
+                </div>
+                <button 
+                  className="btn btn-primary" 
+                  style={{ width: '100%', justifyContent: 'center', gap: '8px', padding: '10px' }} 
+                  onClick={() => handleSelectOption(idx)}
+                >
+                  <Check size={16} />
+                  Choose Option {idx + 1}
+                </button>
+              </div>
+            ))}
+          </div>
+
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '10px', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '20px' }}>
+            <button 
+              className="btn" 
+              style={{ background: 'rgba(239, 68, 68, 0.1)', color: 'var(--color-danger)', border: '1px solid rgba(239, 68, 68, 0.2)', gap: '8px' }} 
+              onClick={handleRejectOptions}
+            >
+              <X size={16} />
+              Cancel & Discard Drafts
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="editor-layout">
