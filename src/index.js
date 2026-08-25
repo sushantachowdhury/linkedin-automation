@@ -131,64 +131,6 @@ app.post('/api/posts/edit', async (req, res) => {
 
   logEvent('POST_EDIT', `Post content for date ${date} edited by user`);
   res.json({ success: true, message: 'Post content updated.' });
-});
-
-// Select one of the 3 generated draft options
-app.post('/api/posts/select-option', async (req, res) => {
-  const { date, index } = req.body;
-  const currentSettings = getSettings();
-  const posts = getPosts();
-  const post = posts.find(p => p.date === date);
-
-  if (!post) {
-    return res.status(404).json({ error: 'Post not found.' });
-  }
-
-  if (!post.draftOptions || !post.draftOptions[index]) {
-    return res.status(400).json({ error: 'Invalid draft option index.' });
-  }
-
-  const selectedOption = post.draftOptions[index];
-  post.messagePayload = selectedOption;
-  post.status = 'Drafted';
-  savePost(post);
-
-  // Sync to Google Sheet
-  await updateSheetQueue(currentSettings, date, {
-    messagePayload: selectedOption,
-    analyticsStatus: 'Drafted'
-  });
-
-  logEvent('POST_SELECT_OPTION', `Selected draft Option ${index + 1} for date ${date}`);
-  res.json({ success: true, post });
-});
-
-// Reject drafts and reset to Pending
-app.post('/api/posts/reject', async (req, res) => {
-  const { date } = req.body;
-  const currentSettings = getSettings();
-  const posts = getPosts();
-  const post = posts.find(p => p.date === date);
-
-  if (!post) {
-    return res.status(404).json({ error: 'Post not found.' });
-  }
-
-  post.draftOptions = [];
-  post.messagePayload = '';
-  post.status = 'Pending';
-  post.approved = false;
-  savePost(post);
-
-  // Sync to Google Sheet (clear messagePayload and reset analyticsStatus to Pending)
-  await updateSheetQueue(currentSettings, date, {
-    messagePayload: '',
-    analyticsStatus: 'Pending'
-  });
-
-  logEvent('POST_REJECT', `Rejected and cleared draft options for date ${date}`);
-  res.json({ success: true, post });
-});
 
 // 4. Manual execution trigger
 app.post('/api/posts/trigger-step', async (req, res) => {
