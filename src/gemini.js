@@ -84,8 +84,6 @@ Key principles to keep in mind:
 
 What's your take? Do you prioritize immediate performance or rich animations when starting a new project? Let's discuss in the comments below!
 
----
-Generated on: ${dateStr}
 #frontend #webdevelopment #uiux #responsivedesign #cleanui`;
 }
 

@@ -211,7 +211,15 @@ function Editor({ posts, selectedDate, setSelectedDate, profile, backendUrl, sho
         
         <div className="linkedin-mockup">
           <div className="li-header">
-            <img className="li-avatar" src={profile.avatar} alt={profile.name} />
+            <img 
+              className="li-avatar" 
+              src={profile.avatar} 
+              alt={profile.name} 
+              onError={(e) => {
+                e.target.onerror = null;
+                e.target.src = '/user_logo.png';
+              }}
+            />
             <div className="li-meta">
               <span className="li-name">{profile.name}</span>
               <span className="li-headline">{profile.headline}</span>
