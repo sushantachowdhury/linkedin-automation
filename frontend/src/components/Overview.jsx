@@ -128,13 +128,13 @@ function Overview({ status, posts, logs, backendUrl, showToast, onRefresh, onSel
           
           <div className={`timeline-step ${getStepClass(0)}`}>
             <div className="step-node">1</div>
-            <span className="step-time">17:00</span>
+            <span className="step-time">16:30</span>
             <span className="step-name">Draft Post</span>
           </div>
 
           <div className={`timeline-step ${getStepClass(1)}`}>
             <div className="step-node">2</div>
-            <span className="step-time">17:15</span>
+            <span className="step-time">16:45</span>
             <span className="step-name">Email/WA Alerts</span>
           </div>
 
@@ -146,7 +146,7 @@ function Overview({ status, posts, logs, backendUrl, showToast, onRefresh, onSel
 
           <div className={`timeline-step ${getStepClass(4)}`}>
             <div className="step-node">4</div>
-            <span className="step-time">18:00</span>
+            <span className="step-time">17:00</span>
             <span className="step-name">LinkedIn Publish</span>
           </div>
         </div>
@@ -158,7 +158,7 @@ function Overview({ status, posts, logs, backendUrl, showToast, onRefresh, onSel
             disabled={triggering !== null || !todayPost || currentStageIndex >= 4}
           >
             <Cpu size={16} />
-            {triggering === 'generate' ? 'Drafting...' : '17:00: Generate Draft'}
+            {triggering === 'generate' ? 'Drafting...' : '16:30: Generate Draft'}
           </button>
           
           <button 
@@ -167,7 +167,7 @@ function Overview({ status, posts, logs, backendUrl, showToast, onRefresh, onSel
             disabled={triggering !== null || !todayPost || currentStageIndex < 1 || currentStageIndex >= 4}
           >
             <Send size={16} />
-            {triggering === 'alert' ? 'Sending...' : '17:15: Dispatch Review Alerts'}
+            {triggering === 'alert' ? 'Sending...' : '16:45: Dispatch Review Alerts'}
           </button>
 
           <button 
@@ -176,7 +176,7 @@ function Overview({ status, posts, logs, backendUrl, showToast, onRefresh, onSel
             disabled={triggering !== null || !todayPost || currentStageIndex < 2 || !todayPost.approved || currentStageIndex >= 4}
           >
             <TrendingUp size={16} />
-            {triggering === 'publish' ? 'Posting...' : '18:00: Publish to LinkedIn'}
+            {triggering === 'publish' ? 'Posting...' : '17:00: Publish to LinkedIn'}
           </button>
         </div>
       </div>

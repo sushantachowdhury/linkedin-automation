@@ -719,3 +719,63 @@ body {
   color: var(--text-muted);
   font-size: 11px;
 }
+
+/* Mobile shell responsiveness */
+@media (max-width: 768px) {
+  .app-container {
+    flex-direction: column;
+  }
+  .sidebar {
+    position: relative;
+    width: 100%;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--border-glass);
+    padding: 20px 16px;
+  }
+  .logo-section {
+    margin-bottom: 16px;
+    justify-content: center;
+  }
+  .nav-menu {
+    flex-direction: row;
+    overflow-x: auto;
+    padding-bottom: 8px;
+    gap: 12px;
+  }
+  .nav-item {
+    white-space: nowrap;
+    padding: 8px 16px;
+  }
+  .nav-item.active {
+    border-left: none;
+    border-bottom: 3px solid var(--accent-primary);
+    padding-left: 16px;
+  }
+  .sidebar-footer {
+    display: none; /* Hide profile card on mobile sidebar to save space */
+  }
+  .main-content {
+    margin-left: 0;
+    padding: 24px 16px;
+  }
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  .page-header > div {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .stats-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .queue-table th:nth-child(4),
+  .queue-table td:nth-child(4),
+  .queue-table th:nth-child(5),
+  .queue-table td:nth-child(5) {
+    display: none; /* Hide payload & status columns on small screen sizes for readability */
+  }
+}
+
