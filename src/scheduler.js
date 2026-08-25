@@ -166,12 +166,12 @@ export function startScheduler() {
     await triggerAlert(today);
   });
 
-  // 17:00 - Publishing cron (every day at 5:00 PM)
-  cron.schedule('0 17 * * *', async () => {
+  // 18:00 - Publishing cron (every day at 6:00 PM)
+  cron.schedule('0 18 * * *', async () => {
     const today = getLocalDateString();
-    logEvent('SCHEDULER', `Cron triggered: LinkedIn Publishing (17:00) for ${today}`);
+    logEvent('SCHEDULER', `Cron triggered: LinkedIn Publishing (18:00) for ${today}`);
     await triggerPublish(today);
   });
 
-  logEvent('SCHEDULER', 'Cron listener active: Content Gen (16:30), Review Alerts (16:45), Publishing (17:00)');
+  logEvent('SCHEDULER', 'Cron listener active: Content Gen (16:30), Review Alerts (16:45), Publishing (18:00)');
 }
