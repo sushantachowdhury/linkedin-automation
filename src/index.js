@@ -131,6 +131,7 @@ app.post('/api/posts/edit', async (req, res) => {
 
   logEvent('POST_EDIT', `Post content for date ${date} edited by user`);
   res.json({ success: true, message: 'Post content updated.' });
+});
 
 // 4. Manual execution trigger
 app.post('/api/posts/trigger-step', async (req, res) => {
