@@ -210,7 +210,12 @@ function Editor({ posts, selectedDate, setSelectedDate, profile, backendUrl, sho
         <h3 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>LinkedIn Mockup Feed Preview</h3>
         
         <div className="linkedin-mockup">
-          <div className="li-header">
+          <div 
+            className="li-header"
+            style={{ cursor: profile.url ? 'pointer' : 'default' }}
+            onClick={() => profile.url && window.open(profile.url, '_blank')}
+            title={profile.url ? `View LinkedIn Profile: ${profile.url}` : ''}
+          >
             <img 
               className="li-avatar" 
               src={profile.avatar} 

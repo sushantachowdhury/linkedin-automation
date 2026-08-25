@@ -358,6 +358,16 @@ function Settings({ settings, backendUrl, showToast, onRefresh }) {
                   placeholder="Paste direct image URL..."
                 />
               </div>
+              <div className="form-group full-width">
+                <label>LinkedIn Profile URL (Real/Mock)</label>
+                <input 
+                  type="text" 
+                  className="form-input" 
+                  value={formData.LINKEDIN_USER_URL || ''} 
+                  onChange={(e) => handleInputChange('LINKEDIN_USER_URL', e.target.value)} 
+                  placeholder="E.g., https://www.linkedin.com/in/sushantachowdhury"
+                />
+              </div>
             </div>
           </div>
         </div>
