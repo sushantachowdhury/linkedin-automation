@@ -308,7 +308,7 @@ function Settings({ settings, backendUrl, showToast, onRefresh }) {
           <div className="form-group full-width" style={{ marginTop: '10px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
               <LinkedInIcon size={16} style={{ color: '#0077b5' }} />
-              <h4 style={{ fontSize: '14px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>LinkedIn Developer Credentials</h4>
+              <h4 style={{ fontSize: '14px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>LinkedIn Developer Credentials & Mock Overrides</h4>
             </div>
             <div className="settings-form">
               <div className="form-group">
@@ -336,6 +336,26 @@ function Settings({ settings, backendUrl, showToast, onRefresh }) {
                   className="form-input" 
                   value={formData.LINKEDIN_REDIRECT_URI || ''} 
                   onChange={(e) => handleInputChange('LINKEDIN_REDIRECT_URI', e.target.value)} 
+                />
+              </div>
+              <div className="form-group">
+                <label>LinkedIn Profile Display Name (Mock/Override)</label>
+                <input 
+                  type="text" 
+                  className="form-input" 
+                  value={formData.LINKEDIN_USER_NAME || ''} 
+                  onChange={(e) => handleInputChange('LINKEDIN_USER_NAME', e.target.value)} 
+                  placeholder="E.g., Sushanta Chowdhury"
+                />
+              </div>
+              <div className="form-group">
+                <label>LinkedIn Profile Picture URL (Mock/Override)</label>
+                <input 
+                  type="text" 
+                  className="form-input" 
+                  value={formData.LINKEDIN_USER_PICTURE || ''} 
+                  onChange={(e) => handleInputChange('LINKEDIN_USER_PICTURE', e.target.value)} 
+                  placeholder="Paste direct image URL..."
                 />
               </div>
             </div>

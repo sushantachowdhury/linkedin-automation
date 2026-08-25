@@ -33,27 +33,17 @@ export async function triggerContentGen(date) {
     // Determine analytics status/trigger
     const analyticsTrigger = post.analyticsStatus || 'No active traffic triggers';
 
-    // 2. Draft 3 content options using Gemini API
-    const drafts = await generateDraftPost(settings, post.title, analyticsTrigger);
+    // 2. Draft content using Gemini API
+    const draftText = await generateDraftPost(settings, post.title, analyticsTrigger);
 
-    // 3. Update local DB (save drafts and set status to Awaiting)
-    const updatedPost = {
-      ...post,
-      draftOptions: drafts,
-      messagePayload: '', // Empty until selected
-      status: 'Awaiting',
-      approved: false
-    };
-    savePost(updatedPost);
-
-    // Update Sheets with status Awaiting Option Selection
+    // 3. Update Sheets & Local Storage
     await updateSheetQueue(settings, date, {
-      messagePayload: '', // Empty until selected
-      analyticsStatus: 'Awaiting Option Selection'
+      messagePayload: draftText,
+      analyticsStatus: 'Drafted'
     });
 
-    logEvent('PIPELINE_SUCCESS', `Content Generation complete (3 drafts generated) for date ${date}`);
-    return { success: true, post: updatedPost };
+    logEvent('PIPELINE_SUCCESS', `Content Generation complete for date ${date}`);
+    return { success: true, post: { ...post, payload: draftText, status: 'Drafted' } };
   } catch (err) {
     logEvent('PIPELINE_ERROR', `Content Generation failed for date ${date}: ${err.message}`);
     return { success: false, error: err.message };
@@ -73,22 +63,22 @@ export async function triggerAlert(date) {
     const queue = await getSheetQueue(settings);
     const post = queue.find(p => p.date === date);
 
-    const activePayload = post ? (post.messagePayload || post.payload) : '';
-    const hasOptions = post && post.draftOptions && Array.isArray(post.draftOptions) && post.draftOptions.length > 0;
-
-    if (!post || (!activePayload && !hasOptions)) {
+    if (!post || (!post.messagePayload && !post.payload)) {
       logEvent('PIPELINE_ERROR', `Cannot alert for date ${date}: Post draft does not exist.`);
       return { success: false, error: 'Draft content is empty. Generate content first.' };
     }
 
-    // Send notifications (sendReviewAlert will handle multiple options formatting internally)
-    await sendReviewAlert(settings, post);
-
-    // Update status to Awaiting Approval (only if they selected option already, otherwise keep Awaiting selection)
-    const nextStatus = activePayload ? 'Awaiting Approval' : 'Awaiting';
-    const updatedPost = {
+    // Send notifications
+    const activePost = {
       ...post,
-      status: nextStatus
+      payload: post.messagePayload || post.payload
+    };
+    await sendReviewAlert(settings, activePost);
+
+    // Update status to Awaiting Approval
+    const updatedPost = {
+      ...activePost,
+      status: 'Awaiting Approval'
     };
     savePost(updatedPost);
 
