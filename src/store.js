@@ -45,6 +45,7 @@ export function getSettings() {
   
   const envKeys = [
     'PORT',
+    'AGENT_MODE',
     'GOOGLE_SHEET_ID',
     'GOOGLE_SERVICE_ACCOUNT_JSON',
     'GEMINI_API_KEY',
@@ -62,12 +63,19 @@ export function getSettings() {
     'LINKEDIN_REDIRECT_URI'
   ];
 
-  const settings = { ...db.settings };
+  const settings = {};
   
-  // env takes precedence or acts as default
+  // env acts as default
   envKeys.forEach(key => {
     if (process.env[key]) {
       settings[key] = process.env[key];
+    }
+  });
+
+  // db.settings (User UI configurations) takes precedence
+  Object.keys(db.settings).forEach(key => {
+    if (db.settings[key] !== undefined && db.settings[key] !== '') {
+      settings[key] = db.settings[key];
     }
   });
 

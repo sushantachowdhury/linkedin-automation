@@ -36,14 +36,17 @@ export async function triggerContentGen(date) {
     // 2. Draft content using Gemini API
     const draftText = await generateDraftPost(settings, post.title, analyticsTrigger);
 
+    const isAgentMode = settings.AGENT_MODE === 'true' || settings.AGENT_MODE === true;
+
     // 3. Update Sheets & Local Storage
     await updateSheetQueue(settings, date, {
       messagePayload: draftText,
-      analyticsStatus: 'Drafted'
+      analyticsStatus: 'Drafted',
+      approved: isAgentMode
     });
 
-    logEvent('PIPELINE_SUCCESS', `Content Generation complete for date ${date}`);
-    return { success: true, post: { ...post, payload: draftText, status: 'Drafted' } };
+    logEvent('PIPELINE_SUCCESS', `Content Generation complete for date ${date}. Agent Auto-Approve: ${isAgentMode}`);
+    return { success: true, post: { ...post, payload: draftText, status: 'Drafted', approved: isAgentMode } };
   } catch (err) {
     logEvent('PIPELINE_ERROR', `Content Generation failed for date ${date}: ${err.message}`);
     return { success: false, error: err.message };

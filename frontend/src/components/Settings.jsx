@@ -152,6 +152,29 @@ function Settings({ settings, backendUrl, showToast, onRefresh }) {
         </div>
 
         <div className="settings-form">
+          {/* Agent Automation Mode section */}
+          <div className="form-group full-width" style={{ borderBottom: '1px solid var(--border-glass)', paddingBottom: '20px', marginBottom: '10px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+              <ShieldCheck size={16} style={{ color: 'var(--color-success)' }} />
+              <h4 style={{ fontSize: '14px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Autonomous Agent Mode</h4>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <input 
+                type="checkbox" 
+                id="agent-mode"
+                checked={formData.AGENT_MODE === 'true' || formData.AGENT_MODE === true} 
+                onChange={(e) => handleInputChange('AGENT_MODE', e.target.checked)} 
+                style={{ width: '20px', height: '20px', cursor: 'pointer', accentColor: 'var(--accent-primary)' }}
+              />
+              <label htmlFor="agent-mode" style={{ fontSize: '14px', color: 'var(--text-primary)', cursor: 'pointer', fontWeight: 600 }}>
+                Enable Autonomous Agent Mode (Auto-Approve & Auto-Publish)
+              </label>
+            </div>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '12px', marginTop: '6px' }}>
+              When enabled, the automated pipeline agent will bypass human review, auto-approving generated posts and publishing them directly to LinkedIn at 6:00 PM.
+            </p>
+          </div>
+
           {/* Gemini section */}
           <div className="form-group full-width" style={{ borderBottom: '1px solid var(--border-glass)', paddingBottom: '20px', marginBottom: '10px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>

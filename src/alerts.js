@@ -55,14 +55,26 @@ export async function sendReviewAlert(settings, post) {
     emailText = `LinkedIn Post Draft Options are ready for ${post.date}.\nTopic: "${post.title}"\n\nPlease open the dashboard to select one of the 3 draft options.\n\nReview Link: ${approvalLink}`;
   } else {
     // Normal single post alert
-    subject = `📝 Action Required: LinkedIn Post Review - ${post.date}`;
-    whatsappMsg = `LinkedIn post review is ready for approval.\nTopic: "${post.title}"\nReview Link: ${approvalLink}`;
+    const isApproved = post.approved;
+    subject = isApproved
+      ? `🤖 Agent Notification: LinkedIn Post Auto-Approved - ${post.date}`
+      : `📝 Action Required: LinkedIn Post Review - ${post.date}`;
+      
+    whatsappMsg = isApproved
+      ? `🤖 *LinkedIn Automation Agent*\n\nI have auto-approved today's post:\n*"${post.title}"*\n\nIt is scheduled to publish at 6:00 PM today. You can review or edit the draft here:\n${approvalLink}`
+      : `LinkedIn post review is ready for approval.\nTopic: "${post.title}"\nReview Link: ${approvalLink}`;
     
     emailHtml = `
       <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0f172a; color: #f1f5f9; padding: 30px; border-radius: 12px; max-width: 600px; margin: 0 auto; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
-        <h2 style="color: #8b5cf6; border-bottom: 2px solid #334155; padding-bottom: 10px; margin-top: 0;">LinkedIn Post Review</h2>
+        <h2 style="color: #8b5cf6; border-bottom: 2px solid #334155; padding-bottom: 10px; margin-top: 0;">
+          ${isApproved ? '🤖 Post Auto-Approved by Agent' : 'LinkedIn Post Review'}
+        </h2>
         <p style="font-size: 16px; line-height: 1.6;">Hello Sushanta,</p>
-        <p style="font-size: 15px; line-height: 1.6; color: #94a3b8;">Your automated publishing pipeline has drafted a new post for today. Please review the details below:</p>
+        <p style="font-size: 15px; line-height: 1.6; color: #94a3b8;">
+          ${isApproved 
+            ? "Your autonomous agent has drafted and auto-approved today's post. It will publish automatically at 6:00 PM unless you modify or cancel it:"
+            : "Your automated publishing pipeline has drafted a new post for today. Please review the details below:"}
+        </p>
         
         <div style="background-color: #1e293b; padding: 20px; border-radius: 8px; border-left: 4px solid #8b5cf6; margin: 20px 0;">
           <h4 style="margin: 0 0 10px 0; color: #38bdf8; font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em;">Topic</h4>
@@ -76,7 +88,7 @@ export async function sendReviewAlert(settings, post) {
 
         <div style="text-align: center; margin-top: 30px;">
           <a href="${approvalLink}" style="background-color: #8b5cf6; color: #ffffff; padding: 12px 24px; font-size: 16px; font-weight: bold; text-decoration: none; border-radius: 6px; display: inline-block; transition: background-color 0.2s;">
-            Approve & Edit in Dashboard
+            ${isApproved ? 'Review & Edit in Dashboard' : 'Approve & Edit in Dashboard'}
           </a>
         </div>
         
@@ -86,7 +98,9 @@ export async function sendReviewAlert(settings, post) {
       </div>
     `;
 
-    emailText = `LinkedIn Post Review Ready for ${post.date}.\nTopic: ${post.title}\n\nDraft Content:\n${activePayload}\n\nReview Link: ${approvalLink}`;
+    emailText = isApproved
+      ? `LinkedIn Post Auto-Approved for ${post.date}.\nTopic: ${post.title}\n\nIt will publish at 6:00 PM. Review Link: ${approvalLink}`
+      : `LinkedIn Post Review Ready for ${post.date}.\nTopic: ${post.title}\n\nReview Link: ${approvalLink}`;
   }
 
   logEvent('ALERT_INFO', `Triggering alerts for date ${post.date}...`);
