@@ -114,7 +114,7 @@ app.post('/api/posts/approve', async (req, res) => {
 });
 
 app.post('/api/posts/edit', async (req, res) => {
-  const { date, payload } = req.body;
+  const { date, payload, imageUrl } = req.body;
   const currentSettings = getSettings();
 
   const posts = getPosts();
@@ -125,7 +125,8 @@ app.post('/api/posts/edit', async (req, res) => {
   }
 
   await updateSheetQueue(currentSettings, date, {
-    messagePayload: payload
+    messagePayload: payload,
+    imageUrl: imageUrl
   });
 
   logEvent('POST_EDIT', `Post content for date ${date} edited by user`);

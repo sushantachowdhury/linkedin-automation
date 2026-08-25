@@ -52,6 +52,7 @@ export async function getSheetQueue(settings) {
     const titleIdx = header.indexOf('title');
     const statusIdx = header.indexOf('analytics_status');
     const payloadIdx = header.indexOf('message_payload');
+    const imageIdx = header.findIndex(h => h === 'image_url' || h === 'banner_url' || h === 'media_url');
 
     if (dateIdx === -1 || titleIdx === -1) {
       throw new Error('Google Sheet must at least contain "Date" and "Title" columns.');
@@ -67,6 +68,7 @@ export async function getSheetQueue(settings) {
       const title = titleIdx !== -1 && row[titleIdx] ? row[titleIdx].trim() : '';
       const analyticsStatus = statusIdx !== -1 && row[statusIdx] ? row[statusIdx].trim() : 'Pending';
       const messagePayload = payloadIdx !== -1 && row[payloadIdx] ? row[payloadIdx].trim() : '';
+      const imageUrl = imageIdx !== -1 && row[imageIdx] ? row[imageIdx].trim() : '';
 
       posts.push({
         date,
@@ -74,6 +76,7 @@ export async function getSheetQueue(settings) {
         title,
         analyticsStatus,
         messagePayload,
+        imageUrl,
         status: messagePayload ? 'Drafted' : 'Pending',
         approved: false // local DB manages approval state
       });
@@ -87,7 +90,8 @@ export async function getSheetQueue(settings) {
         return {
           ...sheetPost,
           approved: localMatch.approved,
-          status: localMatch.status === 'Published' ? 'Published' : sheetPost.status
+          status: localMatch.status === 'Published' ? 'Published' : sheetPost.status,
+          imageUrl: sheetPost.imageUrl || localMatch.imageUrl
         };
       }
       return sheetPost;
@@ -156,7 +160,7 @@ export async function updateSheetQueue(settings, date, updates) {
       return;
     }
 
-    // Now query the header to find columns for analytics_status and message_payload
+    // Now query the header to find columns for analytics_status, message_payload and image_url
     const headerResponse = await sheets.spreadsheets.values.get({
       spreadsheetId: sheetId,
       range: 'Sheet1!1:1',
@@ -165,6 +169,7 @@ export async function updateSheetQueue(settings, date, updates) {
     const header = headerResponse.data.values[0].map(h => h.trim().toLowerCase());
     const statusColIdx = header.indexOf('analytics_status');
     const payloadColIdx = header.indexOf('message_payload');
+    const imageColIdx = header.findIndex(h => h === 'image_url' || h === 'banner_url' || h === 'media_url');
 
     // Convert column indices to Letters (0 -> A, 1 -> B, etc.)
     const getColLetter = (index) => String.fromCharCode(65 + index);
@@ -191,6 +196,18 @@ export async function updateSheetQueue(settings, date, updates) {
           range: `Sheet1!${colLetter}${rowIndex}`,
           valueInputOption: 'RAW',
           requestBody: { values: [[updates.messagePayload]] }
+        })
+      );
+    }
+
+    if (imageColIdx !== -1 && updates.imageUrl !== undefined) {
+      const colLetter = getColLetter(imageColIdx);
+      updatePromises.push(
+        sheets.spreadsheets.values.update({
+          spreadsheetId: sheetId,
+          range: `Sheet1!${colLetter}${rowIndex}`,
+          valueInputOption: 'RAW',
+          requestBody: { values: [[updates.imageUrl]] }
         })
       );
     }

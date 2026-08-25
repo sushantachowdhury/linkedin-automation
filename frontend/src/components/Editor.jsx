@@ -13,18 +13,21 @@ import {
 
 function Editor({ posts, selectedDate, setSelectedDate, profile, backendUrl, showToast, onRefresh }) {
   const [content, setContent] = useState('');
+  const [imageUrl, setImageUrl] = useState('');
   const [saving, setSaving] = useState(false);
   const [approving, setApproving] = useState(false);
   const [publishing, setPublishing] = useState(false);
 
   const activePost = posts.find(p => p.date === selectedDate);
 
-  // Initialize textarea when selected post changes
+  // Initialize textarea and image when selected post changes
   useEffect(() => {
     if (activePost) {
       setContent(activePost.messagePayload || activePost.payload || '');
+      setImageUrl(activePost.imageUrl || '');
     } else {
       setContent('');
+      setImageUrl('');
     }
   }, [selectedDate, posts]);
 
@@ -35,7 +38,7 @@ function Editor({ posts, selectedDate, setSelectedDate, profile, backendUrl, sho
       const response = await fetch(`${backendUrl}/api/posts/edit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ date: selectedDate, payload: content })
+        body: JSON.stringify({ date: selectedDate, payload: content, imageUrl: imageUrl })
       });
       if (response.ok) {
         showToast('Draft content saved successfully');
@@ -79,11 +82,11 @@ function Editor({ posts, selectedDate, setSelectedDate, profile, backendUrl, sho
 
     setPublishing(true);
     try {
-      // First save current content changes
+      // First save current content and image changes
       await fetch(`${backendUrl}/api/posts/edit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ date: selectedDate, payload: content })
+        body: JSON.stringify({ date: selectedDate, payload: content, imageUrl: imageUrl })
       });
 
       // Mark approved first to bypass scheduler check
@@ -145,9 +148,22 @@ function Editor({ posts, selectedDate, setSelectedDate, profile, backendUrl, sho
 
         {activePost ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            <div>
-              <h3 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '4px' }}>Topic: {activePost.title}</h3>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '13px' }}>Scheduled: {activePost.time || '17:00'}</p>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px' }}>
+              <div>
+                <h3 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '4px' }}>Topic: {activePost.title}</h3>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '13px' }}>Scheduled: {activePost.time || '17:00'}</p>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', minWidth: '240px' }}>
+                <label style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-secondary)' }}>Banner Image URL / Local Path</label>
+                <input 
+                  type="text" 
+                  className="form-input" 
+                  value={imageUrl} 
+                  onChange={(e) => setImageUrl(e.target.value)} 
+                  placeholder="E.g., /hrms_banner.jpg"
+                  style={{ padding: '6px 10px', fontSize: '13px' }}
+                />
+              </div>
             </div>
 
             <textarea
@@ -209,6 +225,16 @@ function Editor({ posts, selectedDate, setSelectedDate, profile, backendUrl, sho
           <div className="li-content">
             {content || <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>Draft text is empty. Enter some content on the left to see the feed preview render live...</span>}
           </div>
+
+          {imageUrl && (
+            <div style={{ borderTop: '1px solid var(--border-glass)', marginTop: '12px', background: 'rgba(15, 23, 42, 0.3)', overflow: 'hidden' }}>
+              <img 
+                src={imageUrl} 
+                alt="Banner Preview" 
+                style={{ width: '100%', maxHeight: '240px', objectFit: 'cover', display: 'block' }}
+              />
+            </div>
+          )}
 
           <div className="li-divider"></div>
 
